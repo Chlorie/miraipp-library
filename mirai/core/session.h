@@ -419,8 +419,8 @@ namespace mirai
          * application will abort.
          */
         template <typename F, typename E,
-            typename = std::invoke_result_t<F, Event&>,
-            typename = std::invoke_result_t<E>>
+            std::invoke_result_t<F, Event&>* = nullptr,
+            std::invoke_result_t<E>* = nullptr>
         ws::Connection& subscribe_messages(F&& callback, E&& error_handler,
             ExecutionPolicy policy = ExecutionPolicy::single_thread);
 
@@ -438,8 +438,8 @@ namespace mirai
          * the application will abort.
          */
         template <typename F, typename E,
-            typename = std::invoke_result_t<F, Event&>,
-            typename = std::invoke_result_t<E>>
+            std::invoke_result_t<F, Event&>* = nullptr,
+            std::invoke_result_t<E>* = nullptr>
         ws::Connection& subscribe_non_message(F&& callback, E&& error_handler,
             ExecutionPolicy policy = ExecutionPolicy::single_thread);
 
@@ -457,8 +457,8 @@ namespace mirai
          * will abort.
          */
         template <typename F, typename E,
-            typename = std::invoke_result_t<F, Event&>,
-            typename = std::invoke_result_t<E>>
+            std::invoke_result_t<F, Event&>* = nullptr,
+            std::invoke_result_t<E>* = nullptr>
         ws::Connection& subscribe_all_events(F&& callback, E&& error_handler,
             ExecutionPolicy policy = ExecutionPolicy::single_thread);
 
@@ -531,7 +531,7 @@ namespace mirai
         return con;
     }
 
-    template <typename F, typename E, typename, typename>
+    template <typename F, typename E, std::invoke_result_t<F, Event&>*, std::invoke_result_t<E>*>
     ws::Connection& Session::subscribe_messages(F&& callback, E&& error_handler,
         const ExecutionPolicy policy)
     {
@@ -539,7 +539,7 @@ namespace mirai
             std::forward<F>(callback), std::forward<E>(error_handler), policy);
     }
 
-    template <typename F, typename E, typename, typename>
+    template <typename F, typename E, std::invoke_result_t<F, Event&>*, std::invoke_result_t<E>*>
     ws::Connection& Session::subscribe_non_message(F&& callback, E&& error_handler,
         const ExecutionPolicy policy)
     {
@@ -547,7 +547,7 @@ namespace mirai
             std::forward<F>(callback), std::forward<E>(error_handler), policy);
     }
 
-    template <typename F, typename E, typename, typename>
+    template <typename F, typename E, std::invoke_result_t<F, Event&>*, std::invoke_result_t<E>*>
     ws::Connection& Session::subscribe_all_events(F&& callback, E&& error_handler,
         const ExecutionPolicy policy)
     {
