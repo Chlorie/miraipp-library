@@ -1,6 +1,5 @@
 #include "client.h"
 #include "../common.h"
-#include "../../utils/functional.h"
 
 namespace mirai::ws
 {
@@ -38,14 +37,14 @@ namespace mirai::ws
         if (error) throw RuntimeError(error.message());
         auto& connection = *connections_.emplace_back(
             std::make_unique<Connection>(ptr->get_handle(), uri));
-        ptr->set_open_handler(utils::bind_front(&Connection::on_open,
-            std::ref(connection), std::ref(client_)));
-        ptr->set_fail_handler(utils::bind_front(&Connection::on_fail,
-            std::ref(connection), std::ref(client_)));
-        ptr->set_close_handler(utils::bind_front(&Connection::on_close,
-            std::ref(connection), std::ref(client_)));
-        ptr->set_message_handler(utils::bind_front(&Connection::on_message,
-            std::ref(connection)));
+        using Handle = wspp::connection_hdl;
+        ptr->set_open_handler([&](const Handle hdl) { connection.on_open(client_, hdl); });
+        ptr->set_fail_handler([&](const Handle hdl) { connection.on_fail(client_, hdl); });
+        ptr->set_close_handler([&](const Handle hdl) { connection.on_close(client_, hdl); });
+        ptr->set_message_handler([&](const Handle hdl, const AsioClient::message_ptr msg)
+        {
+            connection.on_message(hdl, msg);
+        });
         client_.connect(ptr);
         return connection;
     }

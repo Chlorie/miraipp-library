@@ -12,7 +12,7 @@ namespace mirai
     /**
      * \brief Whether the target is friend or group
      */
-    enum class TargetType : bool { friend_, group, temp };
+    enum class TargetType { friend_, group, temp };
 
     NLOHMANN_JSON_SERIALIZE_ENUM(TargetType, {
         { TargetType::friend_, "friend" },

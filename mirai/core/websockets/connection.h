@@ -77,27 +77,27 @@ namespace mirai::ws
          * \param client The client
          * \param handle The connection handle
          */
-        void on_open(AsioClient& client, Handle handle);
+        void on_open(AsioClient& client, const Handle& handle);
 
         /**
          * \brief This function is called when the connection fails to connect
          * \param client The client
          * \param handle The connection handle
          */
-        void on_fail(AsioClient& client, Handle handle);
+        void on_fail(AsioClient& client, const Handle& handle);
 
         /**
          * \brief This function is called when the connection is closed
          * \param client The client
          * \param handle The connection handle
          */
-        void on_close(AsioClient& client, Handle handle);
+        void on_close(AsioClient& client, const Handle& handle);
 
         /**
          * \brief This function is called when the connection receives a message
          * \param message The message
          */
-        void on_message(Handle, AsioClient::message_ptr message) const;
+        void on_message(const Handle&, const AsioClient::message_ptr& message) const;
 
         /**
          * \brief Get the connection handle assiociated to this connection

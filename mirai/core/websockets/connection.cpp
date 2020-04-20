@@ -15,7 +15,7 @@ namespace mirai::ws
     }
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void Connection::on_open(AsioClient& client, const Handle handle)
+    void Connection::on_open(AsioClient& client, const Handle& handle)
     {
         status_ = Status::open;
         const auto ptr = client.get_con_from_hdl(handle);
@@ -23,7 +23,7 @@ namespace mirai::ws
     }
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void Connection::on_fail(AsioClient& client, const Handle handle)
+    void Connection::on_fail(AsioClient& client, const Handle& handle)
     {
         status_ = Status::failed;
         const auto ptr = client.get_con_from_hdl(handle);
@@ -32,7 +32,7 @@ namespace mirai::ws
     }
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void Connection::on_close(AsioClient& client, const Handle handle)
+    void Connection::on_close(AsioClient& client, const Handle& handle)
     {
         status_ = Status::closed;
         const auto ptr = client.get_con_from_hdl(handle);
@@ -40,7 +40,7 @@ namespace mirai::ws
     }
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void Connection::on_message(Handle, const AsioClient::message_ptr message) const
+    void Connection::on_message(const Handle&, const AsioClient::message_ptr& message) const
     {
         if (!message_callback_) return;
         message_callback_(message);

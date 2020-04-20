@@ -8,7 +8,6 @@
 #include "websockets/client.h"
 #include "../utils/optional_param.h"
 #include "../utils/array_proxy.h"
-#include "../utils/functional.h"
 #include "../utils/request.h"
 #include "../utils/string.h"
 

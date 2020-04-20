@@ -1,12 +1,12 @@
-﻿# Mirai++ API Library
+# Mirai++ API Library
 
 set(SOURCE_FILES
     "mirai/core/session.cpp" "mirai/core/common.cpp"
     "mirai/core/events.cpp" "mirai/core/types.cpp"
-    "mirai/core/message/message.cpp" "mirai/core/message/segment.cpp" 
+    "mirai/core/message/message.cpp" "mirai/core/message/segment.cpp"
     "mirai/core/message/common.cpp" "mirai/core/message/received_message.cpp"
     "mirai/core/websockets/client.cpp" "mirai/core/websockets/connection.cpp"
-    "mirai/utils/thread.cpp" "mirai/utils/encoding.cpp" "mirai/utils/request.cpp" 
+    "mirai/utils/thread.cpp" "mirai/utils/encoding.cpp" "mirai/utils/request.cpp"
 ) 
 
 add_library(miraipp ${SOURCE_FILES})
@@ -29,9 +29,9 @@ find_package(asio CONFIG REQUIRED)
 find_package(unofficial-iconv CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(miraipp PUBLIC 
-    cpr 
-    websocketpp::websocketpp 
+    cpr
+    websocketpp::websocketpp
     OpenSSL::SSL OpenSSL::Crypto
-    asio asio::asio 
-    unofficial::iconv::libiconv unofficial::iconv::libcharset 
+    asio asio::asio
+    unofficial::iconv::libiconv unofficial::iconv::libcharset
     nlohmann_json nlohmann_json::nlohmann_json)
