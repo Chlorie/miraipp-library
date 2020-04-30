@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <variant>
+#include <chrono>
 #include "types.h"
 #include "message/received_message.h"
 #include "../utils/variant_wrapper.h"
@@ -41,7 +42,7 @@ namespace mirai
      */
     struct BotOnlineEvent final
     {
-        int64_t qq = 0; ///< QQ of the bot
+        uid_t qq; ///< QQ of the bot
     };
 
     /**
@@ -49,7 +50,7 @@ namespace mirai
      */
     struct BotOfflineEventActive final
     {
-        int64_t qq = 0; ///< QQ of the bot
+        uid_t qq; ///< QQ of the bot
     };
 
     /**
@@ -57,7 +58,7 @@ namespace mirai
      */
     struct BotOfflineEventForce final
     {
-        int64_t qq = 0; ///< QQ of the bot
+        uid_t qq; ///< QQ of the bot
     };
 
     /**
@@ -65,7 +66,7 @@ namespace mirai
      */
     struct BotOfflineEventDropped final
     {
-        int64_t qq = 0; ///< QQ of the bot
+        uid_t qq; ///< QQ of the bot
     };
 
     /**
@@ -73,7 +74,7 @@ namespace mirai
      */
     struct BotReloginEvent final
     {
-        int64_t qq = 0; ///< QQ of the bot
+        uid_t qq; ///< QQ of the bot
     };
 
     /**
@@ -81,8 +82,8 @@ namespace mirai
      */
     struct GroupRecallEvent final
     {
-        int64_t author_id = 0; ///< The sender of the recalled message
-        int32_t message_id = 0; ///< The ID of the message
+        uid_t author_id; ///< The sender of the recalled message
+        msgid_t message_id; ///< The ID of the message
         int32_t time = 0; ///< Timestamp when the message is sent
         Group group; ///< The group in which the message is recalled
         std::optional<Member> operator_; ///< The operator who recalled the message, null if it's the bot
@@ -93,10 +94,10 @@ namespace mirai
      */
     struct FriendRecallEvent final
     {
-        int64_t author_id = 0; ///< The sender of the recalled message
-        int32_t message_id = 0; ///< The ID of the message
+        uid_t author_id; ///< The sender of the recalled message
+        msgid_t message_id; ///< The ID of the message
         int32_t time = 0; ///< Timestamp when the message is sent
-        int64_t operator_ = 0; ///< QQ of the operator who recalled the message
+        uid_t operator_; ///< QQ of the operator who recalled the message
     };
 
     /**
@@ -115,7 +116,7 @@ namespace mirai
      */
     struct BotMuteEvent final
     {
-        int32_t duration_seconds = 0; ///< The duration of the mute
+        std::chrono::seconds duration{}; ///< The duration of the mute
         Member operator_; ///< The operator who muted the bot
     };
 
@@ -136,6 +137,22 @@ namespace mirai
     };
 
     /**
+     * \brief Event received when the bot quits a group actively
+     */
+    struct BotLeaveEventActive final
+    {
+        Group group; ///< The group that the bot quitted
+    };
+
+    /**
+     * \brief Event received when the bot gets kicked out of a group
+     */
+    struct BotLeaveEventKick final
+    {
+        Group group; ///< The group that the bot got kicked out of
+    };
+
+    /**
      * \brief Event received when some group's name is changed
      */
     struct GroupNameChangeEvent final
@@ -143,7 +160,7 @@ namespace mirai
         std::string origin; ///< The original group name
         std::string current; ///< The group name now
         Group group; ///< The group of which name is changed
-        bool is_by_bot = false; ///< Whether it's the bot who changed the name
+        std::optional<Member> operator_; ///< The operator who changed the group name, null if it's the bot
     };
 
     /**
@@ -262,7 +279,7 @@ namespace mirai
      */
     struct MemberMuteEvent final
     {
-        int32_t duration_seconds = 0; ///< The duration of the mute in seconds
+        std::chrono::seconds duration{}; ///< The duration of the mute
         Member member; ///< The member who has got muted
         std::optional<Member> operator_; ///< The operator who muted the group member, null if it's the bot
     };
@@ -282,8 +299,8 @@ namespace mirai
     struct NewFriendRequestEvent final
     {
         int64_t event_id = 0; ///< The identifier of the event for future respond
-        int64_t from_id = 0; ///< QQ of the user who started this request
-        std::optional<int64_t> group_id; ///< If the request is started from a group then this is the group id
+        uid_t from_id; ///< QQ of the user who started this request
+        std::optional<gid_t> group_id; ///< If the request is started from a group then this is the group id
         std::string nick; ///< The nickname or group card
     };
 
@@ -301,8 +318,8 @@ namespace mirai
     struct MemberJoinRequestEvent final
     {
         int64_t event_id = 0; ///< The identifier of the event for future respond
-        int64_t from_id = 0; ///< QQ of the user who started this request
-        int64_t group_id; ///< The group ID
+        uid_t from_id; ///< QQ of the user who started this request
+        gid_t group_id; ///< The group ID
         std::string group_name; ///< Name of the group
         std::string nick; ///< The nickname
     };
@@ -329,6 +346,8 @@ namespace mirai
     void from_json(const utils::json& json, BotGroupPermissionChangeEvent& value);
     void from_json(const utils::json& json, BotMuteEvent& value);
     void from_json(const utils::json& json, BotUnmuteEvent& value);
+    void from_json(const utils::json& json, BotLeaveEventActive& value);
+    void from_json(const utils::json& json, BotLeaveEventKick& value);
     void from_json(const utils::json& json, BotJoinGroupEvent& value);
     void from_json(const utils::json& json, GroupNameChangeEvent& value);
     void from_json(const utils::json& json, GroupEntranceAnnouncementChangeEvent& value);
@@ -351,10 +370,10 @@ namespace mirai
         GroupMessage, FriendMessage, TempMessage,
         BotOnlineEvent, BotOfflineEventActive, BotOfflineEventForce, BotOfflineEventDropped,
         BotReloginEvent, GroupRecallEvent, FriendRecallEvent, BotGroupPermissionChangeEvent,
-        BotMuteEvent, BotUnmuteEvent, BotJoinGroupEvent, GroupNameChangeEvent,
-        GroupEntranceAnnouncementChangeEvent, GroupMuteAllEvent, GroupAllowAnonymousChatEvent,
-        GroupAllowConfessTalkEvent, GroupAllowMemberInviteEvent, MemberJoinEvent,
-        MemberLeaveEventKick, MemberLeaveEventQuit, MemberCardChangeEvent,
+        BotMuteEvent, BotUnmuteEvent, BotJoinGroupEvent, BotLeaveEventActive, BotLeaveEventKick,
+        GroupNameChangeEvent, GroupEntranceAnnouncementChangeEvent, GroupMuteAllEvent,
+        GroupAllowAnonymousChatEvent, GroupAllowConfessTalkEvent, GroupAllowMemberInviteEvent,
+        MemberJoinEvent, MemberLeaveEventKick, MemberLeaveEventQuit, MemberCardChangeEvent,
         MemberSpecialTitleChangeEvent, MemberPermissionChangeEvent, MemberMuteEvent, MemberUnmuteEvent,
         NewFriendRequestEvent, MemberJoinRequestEvent
     >;
@@ -367,10 +386,10 @@ namespace mirai
         group_message, friend_message, temp_message,
         bot_online_event, bot_offline_event_active, bot_offline_event_force, bot_offline_event_dropped,
         bot_relogin_event, group_recall_event, friend_recall_event, bot_group_permission_change_event,
-        bot_mute_event, bot_unmute_event, bot_join_group_event, group_name_change_event,
-        group_entrance_announcement_change_event, group_mute_all_event, group_allow_anonymous_chat_event,
-        group_allow_confess_talk_event, group_allow_member_invite_event, member_join_event,
-        member_leave_event_kick, member_leave_event_quit, member_card_change_event,
+        bot_mute_event, bot_unmute_event, bot_join_group_event, bot_leave_event_active, bot_leave_event_kick,
+        group_name_change_event, group_entrance_announcement_change_event, group_mute_all_event,
+        group_allow_anonymous_chat_event, group_allow_confess_talk_event, group_allow_member_invite_event,
+        member_join_event, member_leave_event_kick, member_leave_event_quit, member_card_change_event,
         member_special_title_change_event, member_permission_change_event, member_mute_event,
         member_unmute_event, new_friend_request_event, member_join_request_event
     };

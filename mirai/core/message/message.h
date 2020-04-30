@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <vector>
+#include "../../utils/adaptor.h"
 
 namespace mirai
 {
@@ -16,7 +17,13 @@ namespace mirai
      * \brief A message type wrapping message chain, containing member functions
      * for better manipulating and consuming of the messages.
      */
-    class Message final
+    class Message final :
+        public adp::Equal<Message>,
+        public adp::Equal<Message, std::string_view>,
+        public adp::Concatenate<Message, Message>,
+        public adp::Concatenate<Message, MessageChain>,
+        public adp::Concatenate<Message, Segment>,
+        public adp::Concatenate<Message, std::string_view>
     {
     private:
         MessageChain chain_;
@@ -34,9 +41,15 @@ namespace mirai
 
         /**
          * \brief Construct a message with a single segment
-         * \param node The message chain node
+         * \param segment The message chain node
          */
-        explicit Message(Segment node);
+        explicit Message(const Segment& segment);
+
+        /**
+         * \brief Construct a message with a single segment
+         * \param segment The message chain node
+         */
+        explicit Message(Segment&& segment);
 
         /**
          * \brief Construct a message using a plain text string
@@ -53,10 +66,17 @@ namespace mirai
 
         /**
          * \brief Assign a message with only one segment to this object
-         * \param node The message chain node
+         * \param segment The message chain node
          * \return Reference to this object
          */
-        Message& operator=(Segment node);
+        Message& operator=(const Segment& segment);
+
+        /**
+         * \brief Assign a message with only one segment to this object
+         * \param segment The message chain node
+         * \return Reference to this object
+         */
+        Message& operator=(Segment&& segment);
 
         /**
          * \brief Assign a plain text string to this object
@@ -90,52 +110,46 @@ namespace mirai
         bool empty() const { return chain_.empty(); }
 
         /**
-         * \brief Append a segment to the end of this message
-         * \param node The segment
-         */
-        void push_back(Segment node); // TODO: too many moves in these function family
-
-        /**
-         * \brief Append a segment to the end of this message
-         * \param node The segment
+         * \brief Append a message chain to this message
+         * \param chain The message chain to append
          * \return Reference to this message
          */
-        Message& emplace_back(Segment node);
-
-        /**
-         * \brief Append another message to this message
-         * \param message The message to append
-         * \return Reference to this message
-         */
-        Message& operator+=(const Message& message);
-
-        /**
-         * \brief Append another message to this message
-         * \param message The message to append
-         * \return Reference to this message
-         */
-        Message& operator+=(Message&& message);
+        Message& operator+=(const MessageChain& chain);
 
         /**
          * \brief Append a message chain to this message
          * \param chain The message chain to append
          * \return Reference to this message
          */
-        Message& operator+=(const MessageChain& chain) { return operator+=(Message(chain)); }
+        Message& operator+=(MessageChain&& chain);
 
         /**
-         * \brief Append a message chain to this message
-         * \param chain The message chain to append
+         * \brief Append another message to this message
+         * \param message The message to append
          * \return Reference to this message
          */
-        Message& operator+=(MessageChain&& chain) { return operator+=(Message(std::move(chain))); }
+        Message& operator+=(const Message& message) { return operator+=(message.chain_); }
+
+        /**
+         * \brief Append another message to this message
+         * \param message The message to append
+         * \return Reference to this message
+         */
+        Message& operator+=(Message&& message) { return operator+=(std::move(message.chain_)); }
 
         /**
          * \brief Append a segment to the end of this message
-         * \param node The segment
+         * \param segment The segment
          * \return Reference to this message
          */
-        Message& operator+=(Segment node);
+        Message& operator+=(const Segment& segment);
+
+        /**
+         * \brief Append a segment to the end of this message
+         * \param segment The segment
+         * \return Reference to this message
+         */
+        Message& operator+=(Segment&& segment);
 
         /**
          * \brief Append a string of plain text to this message
@@ -143,54 +157,6 @@ namespace mirai
          * \return Reference to this message
          */
         Message& operator+=(std::string_view plain_text);
-
-        /**
-         * \brief Concatenate two messages together
-         * \param lhs The first message
-         * \param rhs The second message
-         * \return The concatenated message
-         */
-        friend Message operator+(Message lhs, const Message& rhs) { return lhs += rhs; }
-
-        /**
-         * \brief Concatenate two messages together
-         * \param lhs The first message
-         * \param rhs The second message
-         * \return The concatenated message
-         */
-        friend Message operator+(Message lhs, Message&& rhs) { return lhs += std::move(rhs); }
-
-        /**
-         * \brief Concatenate a message and a message chain together
-         * \param lhs The message
-         * \param rhs The message chain
-         * \return The concatenated message
-         */
-        friend Message operator+(Message lhs, const MessageChain& rhs) { return lhs += rhs; }
-
-        /**
-         * \brief Concatenate a message and a message chain together
-         * \param lhs The message
-         * \param rhs The message chain
-         * \return The concatenated message
-         */
-        friend Message operator+(Message lhs, MessageChain&& rhs) { return lhs += std::move(rhs); }
-
-        /**
-         * \brief Concatenate a message and a segment together
-         * \param lhs The message
-         * \param rhs The segment
-         * \return The concatenated message
-         */
-        friend Message operator+(Message lhs, Segment rhs);
-
-        /**
-         * \brief Concatenate a message and a plain text string together
-         * \param lhs The message
-         * \param rhs The plain text string
-         * \return The concatenated message
-         */
-        friend Message operator+(Message lhs, const std::string_view rhs) { return lhs += rhs; }
 
         /**
          * \brief Check if two messages are the same
@@ -202,45 +168,12 @@ namespace mirai
         friend bool operator==(const Message& lhs, const Message& rhs) { return lhs.chain_ == rhs.chain_; }
 
         /**
-         * \brief Check if two messages are not the same
-         * \param lhs The first message
-         * \param rhs The second message
-         * \return The result
-         * \remarks For more advanced checking use StringifiedMessage
-         */
-        friend bool operator!=(const Message& lhs, const Message& rhs) { return !(lhs == rhs); }
-        
-        /**
          * \brief Check whether a message and a plain text string are the same
          * \param lhs The message
          * \param rhs The plain text string
          * \return The result
          */
         friend bool operator==(const Message& lhs, std::string_view rhs);
-
-        /**
-         * \brief Check whether a message and a plain text string are the same
-         * \param lhs The plain text string
-         * \param rhs The message
-         * \return The result
-         */
-        friend bool operator==(const std::string_view lhs, const Message& rhs) { return rhs == lhs; }
-
-        /**
-         * \brief Check whether a message and a plain text string are not the same
-         * \param lhs The message
-         * \param rhs The plain text string
-         * \return The result
-         */
-        friend bool operator!=(const Message& lhs, const std::string_view rhs) { return !(lhs == rhs); }
-
-        /**
-         * \brief Check whether a message and a plain text string are not the same
-         * \param lhs The plain text string
-         * \param rhs The message
-         * \return The result
-         */
-        friend bool operator!=(const std::string_view lhs, const Message& rhs) { return !(lhs == rhs); }
 
         /**
          * \brief Get the concatenation of all plain text segments 
@@ -260,7 +193,7 @@ namespace mirai
          * refer to documentation of respective segment type.
          */
         std::string stringify() const;
-        
+
         /**
          * \brief Check whether the message starts with the given string
          * \param text The plain text string
@@ -293,7 +226,7 @@ namespace mirai
          * matching.
          */
         static std::string escape(std::string_view unescaped);
-        
+
         /**
          * \brief Unescape an escaped string
          * \param escaped The escaped string

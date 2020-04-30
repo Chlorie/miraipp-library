@@ -1,6 +1,7 @@
 #pragma once
 
 #include "message.h"
+#include "../types.h"
 #include "../../utils/json_extensions.h"
 #include "../../utils/variant_wrapper.h"
 
@@ -13,7 +14,7 @@ namespace mirai
          */
         struct Source final
         {
-            int32_t id = 0; ///< The message ID of this message
+            msgid_t id; ///< The message ID of this message
             int32_t time = 0; ///< The timestamp when this message was sent
             friend bool operator==(const Source& lhs, const Source& rhs)
             {
@@ -28,17 +29,15 @@ namespace mirai
          */
         struct Quote final
         {
-            int32_t id = 0; ///< The ID of the message being quoted
-            int64_t group_id = 0; ///< The group from which the quoted message is sent (group message)
-            int64_t sender_id = 0; ///< The sender of the quoted message (friend message)
-            int64_t target_id = 0; ///< The target of the quoted message (group ID or user ID)
+            msgid_t id; ///< The ID of the message being quoted
+            gid_t group_id; ///< The group from which the quoted message is sent (group message)
+            uid_t sender_id; ///< The sender of the quoted message (friend message)
             Message origin; ///< The original quoted message
             friend bool operator==(const Quote& lhs, const Quote& rhs)
             {
                 return lhs.id == rhs.id
                     && lhs.group_id == rhs.group_id
-                    && lhs.sender_id == rhs.sender_id
-                    && lhs.target_id == rhs.target_id;
+                    && lhs.sender_id == rhs.sender_id;
             }
             friend bool operator!=(const Quote& lhs, const Quote& rhs) { return !(lhs == rhs); }
         };
@@ -48,7 +47,7 @@ namespace mirai
          */
         struct At final
         {
-            int64_t target = 0; ///< Mentioned group member ID
+            uid_t target; ///< Mentioned group member ID
             std::string display; ///< The string for display the @ message
             /**
              * \brief Get a string representation of this object

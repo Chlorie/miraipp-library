@@ -5,8 +5,8 @@
 namespace mirai
 {
     std::vector<std::string> Session::send_image_message(
-        const utils::OptionalParam<int64_t> qq,
-        const utils::OptionalParam<int64_t> group,
+        const utils::OptionalParam<uid_t> qq,
+        const utils::OptionalParam<gid_t> group,
         const utils::ArrayProxy<std::string> urls) const
     {
         utils::json json{
@@ -29,7 +29,7 @@ namespace mirai
         return res.at("data").get<std::vector<Event>>();
     }
 
-    Session::Session(const std::string_view auth_key, const int64_t qq)
+    Session::Session(const std::string_view auth_key, const uid_t qq)
     {
         // Authorize
         {
@@ -65,7 +65,7 @@ namespace mirai
     }
 
     Session::Session(Session&& other) noexcept :
-        qq_(std::exchange(other.qq_, 0)),
+        qq_(std::exchange(other.qq_, {})),
         key_(std::move(other.key_)),
         client_(std::move(other.client_)),
         thread_pool_(std::move(other.thread_pool_)) {}
@@ -103,28 +103,28 @@ namespace mirai
         thread_pool_.reset();
     }
 
-    int32_t Session::send_friend_message(const int64_t target,
-        const Message& msg, const utils::OptionalParam<int32_t> quote) const
+    msgid_t Session::send_message(const uid_t friend_,
+        const Message& msg, const utils::OptionalParam<msgid_t> quote) const
     {
         utils::json json{
             { "sessionKey", key_ },
-            { "target", target },
+            { "target", friend_ },
             { "messageChain", msg }
         };
         if (quote.has_value()) json["quote"] = *quote;
         const auto res = utils::post_json("/sendFriendMessage", json);
         utils::check_response(res);
-        return res.at("messageId").get<int32_t>();
+        return res.at("messageId").get<msgid_t>();
     }
 
-    int32_t Session::send_friend_message(const int64_t target,
-        const std::string_view msg, const utils::OptionalParam<int32_t> quote) const
+    msgid_t Session::send_message(const uid_t friend_,
+        const std::string_view msg, const utils::OptionalParam<msgid_t> quote) const
     {
-        return send_friend_message(target, Message(msg), quote);
+        return send_message(friend_, Message(msg), quote);
     }
 
-    int32_t Session::send_temp_message(const int64_t qq, const int64_t group,
-        const Message& msg, const utils::OptionalParam<int32_t> quote) const
+    msgid_t Session::send_message(const uid_t qq, const gid_t group,
+        const Message& msg, const utils::OptionalParam<msgid_t> quote) const
     {
         utils::json json{
             { "sessionKey", key_ },
@@ -135,17 +135,17 @@ namespace mirai
         if (quote.has_value()) json["quote"] = *quote;
         const auto res = utils::post_json("/sendTempMessage", json);
         utils::check_response(res);
-        return res.at("messageId").get<int32_t>();
+        return res.at("messageId").get<msgid_t>();
     }
 
-    int32_t Session::send_temp_message(const int64_t qq, const int64_t group,
-        const std::string_view msg, const utils::OptionalParam<int32_t> quote) const
+    msgid_t Session::send_message(const uid_t qq, const gid_t group,
+        const std::string_view msg, const utils::OptionalParam<msgid_t> quote) const
     {
-        return send_temp_message(qq, group, Message(msg), quote);
+        return send_message(qq, group, Message(msg), quote);
     }
 
-    int32_t Session::send_group_message(const int64_t target,
-        const Message& msg, const utils::OptionalParam<int32_t> quote) const
+    msgid_t Session::send_message(const gid_t target,
+        const Message& msg, const utils::OptionalParam<msgid_t> quote) const
     {
         utils::json json{
             { "sessionKey", key_ },
@@ -155,31 +155,31 @@ namespace mirai
         if (quote.has_value()) json["quote"] = *quote;
         const auto res = utils::post_json("/sendGroupMessage", json);
         utils::check_response(res);
-        return res.at("messageId").get<int32_t>();
+        return res.at("messageId").get<msgid_t>();
     }
 
-    int32_t Session::send_group_message(const int64_t target,
-        const std::string_view msg, const utils::OptionalParam<int32_t> quote) const
+    msgid_t Session::send_message(const gid_t target,
+        const std::string_view msg, const utils::OptionalParam<msgid_t> quote) const
     {
-        return send_group_message(target, Message(msg), quote);
+        return send_message(target, Message(msg), quote);
     }
 
-    std::vector<std::string> Session::send_friend_image_message(
-        const int64_t target, const utils::ArrayProxy<std::string> urls) const
+    std::vector<std::string> Session::send_image_message(
+        const uid_t friend_, const utils::ArrayProxy<std::string> urls) const
     {
-        return send_image_message(target, {}, urls);
+        return send_image_message(friend_, {}, urls);
     }
 
-    std::vector<std::string> Session::send_group_image_message(
-        const int64_t target, const utils::ArrayProxy<std::string> urls) const
+    std::vector<std::string> Session::send_image_message(
+        const gid_t group, const utils::ArrayProxy<std::string> urls) const
     {
-        return send_image_message({}, target, urls);
+        return send_image_message({}, group, urls);
     }
 
-    std::vector<std::string> Session::send_temp_image_message(const int64_t qq, const int64_t group,
+    std::vector<std::string> Session::send_image_message(const uid_t qq, const gid_t group,
         const utils::ArrayProxy<std::string> urls) const
     {
-        return send_image_message(qq, group, urls);
+        return send_image_message(utils::OptionalParam(qq), group, urls);
     }
 
     msg::Image Session::upload_image(const TargetType type, const std::string& path) const
@@ -197,7 +197,7 @@ namespace mirai
         return utils::json::parse(response.text).get<msg::Image>();
     }
 
-    void Session::recall(const int32_t message_id) const
+    void Session::recall(const msgid_t message_id) const
     {
         const utils::json json{
             { "sessionKey", key_ },
@@ -235,7 +235,7 @@ namespace mirai
         return res.at("data").get<size_t>();
     }
 
-    Event Session::message_from_id(const int32_t id) const
+    Event Session::message_from_id(const msgid_t id) const
     {
         const utils::json res = utils::get("/messageFromId", {
             { "sessionKey", key_ },
@@ -259,7 +259,7 @@ namespace mirai
         return res.get<std::vector<Group>>();
     }
 
-    std::vector<Member> Session::member_list(const int64_t target) const
+    std::vector<Member> Session::member_list(const gid_t target) const
     {
         const utils::json res = utils::get("/memberList", {
             { "sessionKey", key_ },
@@ -269,7 +269,7 @@ namespace mirai
         return res.get<std::vector<Member>>();
     }
 
-    void Session::mute_all(const int64_t target) const
+    void Session::mute_all(const gid_t target) const
     {
         const utils::json res = utils::post_json("/muteAll", {
             { "sessionKey", key_ },
@@ -278,7 +278,7 @@ namespace mirai
         utils::check_response(res);
     }
 
-    void Session::unmute_all(const int64_t target) const
+    void Session::unmute_all(const gid_t target) const
     {
         const utils::json res = utils::post_json("/unmuteAll", {
             { "sessionKey", key_ },
@@ -287,19 +287,19 @@ namespace mirai
         utils::check_response(res);
     }
 
-    void Session::mute(const int64_t group, const int64_t member,
-        const int32_t time_in_seconds) const
+    void Session::mute(const gid_t group, const uid_t member,
+        const std::chrono::seconds duration) const
     {
         const utils::json res = utils::post_json("/mute", {
             { "sessionKey", key_ },
             { "target", group },
             { "memberId", member },
-            { "time", time_in_seconds }
+            { "time", duration.count() }
         });
         utils::check_response(res);
     }
 
-    void Session::unmute(const int64_t group, const int64_t member) const
+    void Session::unmute(const gid_t group, const uid_t member) const
     {
         const utils::json res = utils::post_json("/unmute", {
             { "sessionKey", key_ },
@@ -309,7 +309,7 @@ namespace mirai
         utils::check_response(res);
     }
 
-    void Session::kick(const int64_t group, const int64_t member,
+    void Session::kick(const gid_t group, const uid_t member,
         const std::string_view message) const
     {
         const utils::json res = utils::post_json("/kick", {
@@ -321,6 +321,15 @@ namespace mirai
         utils::check_response(res);
     }
 
+    void Session::quit(const gid_t group) const
+    {
+        const utils::json res = utils::post_json("/quit", {
+            { "sessionKey", key_ },
+            { "target", group }
+        });
+        utils::check_response(res);
+    }
+
     void Session::respond_new_friend_request(const NewFriendRequestEvent& event,
         const NewFriendResponseType type, const std::string_view message) const
     {
@@ -328,7 +337,7 @@ namespace mirai
             { "sessionKey", key_ },
             { "eventId", event.event_id },
             { "fromId", event.from_id },
-            { "groupId", event.group_id.value_or(0) },
+            { "groupId", event.group_id.value_or(gid_t{}) },
             { "operate", int32_t(type) },
             { "message", message }
         });
@@ -349,7 +358,7 @@ namespace mirai
         utils::check_response(res);
     }
 
-    void Session::group_config(int64_t target, const GroupConfig& config) const
+    void Session::group_config(const gid_t target, const GroupConfig& config) const
     {
         const utils::json res = utils::post_json("/groupConfig", {
             { "sessionKey", key_ },
@@ -359,7 +368,7 @@ namespace mirai
         utils::check_response(res);
     }
 
-    GroupConfig Session::group_config(const int64_t target) const
+    GroupConfig Session::group_config(const gid_t target) const
     {
         const utils::json res = utils::get("/groupConfig", {
             { "sessionKey", key_ },
@@ -368,7 +377,7 @@ namespace mirai
         return res.get<GroupConfig>();
     }
 
-    void Session::member_info(const int64_t group, const int64_t member,
+    void Session::member_info(const gid_t group, const uid_t member,
         const utils::OptionalParam<std::string_view> name,
         const utils::OptionalParam<std::string_view> special_title) const
     {
@@ -383,7 +392,7 @@ namespace mirai
         utils::check_response(res);
     }
 
-    MemberInfo Session::member_info(const int64_t group, const int64_t member) const
+    MemberInfo Session::member_info(const gid_t group, const uid_t member) const
     {
         const utils::json res = utils::get("/memberInfo", {
             { "sessionKey", key_ },

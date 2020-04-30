@@ -16,10 +16,14 @@ target_compile_features(miraipp PUBLIC cxx_std_17) # Enforce C++17 or newer
 set_target_properties(miraipp PROPERTIES CXX_EXTENSIONS off)
 target_compile_definitions(miraipp PUBLIC ASIO_STANDALONE)
 
-# /Zc:__cplusplus is needed for MSVC to produce correct value for the __cplusplus macro
-# If this option is not on, __cplusplus will always expands to 199711L
-if ((MSVC) AND (MSVC_VERSION GREATER_EQUAL 1914))
-    target_compile_options(miraipp PUBLIC "/Zc:__cplusplus")
+if (MSVC)
+    # Force MSVC to use utf-8 encoding regardless of whether the BOM exists
+    target_compile_options(miraipp PUBLIC "/utf-8")
+    # /Zc:__cplusplus is needed for MSVC to produce correct value for the __cplusplus macro
+    # If this option is not on, __cplusplus will always expands to 199711L
+    if (MSVC_VERSION GREATER_EQUAL 1914)
+        target_compile_options(miraipp PUBLIC "/Zc:__cplusplus")
+    endif()
 endif()
 
 find_package(cpr CONFIG REQUIRED)

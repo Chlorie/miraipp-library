@@ -1,8 +1,31 @@
 #pragma once
 
+// Websocket++ is leaking windows SDK macros...
+
+#ifdef WIN32
+#   ifndef NOMINMAX
+#       define NOMINMAX
+#   endif
+#   ifndef WIN32_LEAN_AND_MEAN
+#       define WIN32_LEAN_AND_MEAN
+#   endif
+#endif
+
 #include <websocketpp/connection.hpp>
 #include <websocketpp/client.hpp>
 #include <websocketpp/config/asio_no_tls_client.hpp>
+
+#ifdef WIN32
+#   ifdef near
+#       undef near
+#   endif
+#   ifdef far
+#       undef far
+#   endif
+#   undef NOMINMAX
+#   undef WIN32_LEAN_AND_MEAN
+#endif
+
 #include <functional>
 
 namespace mirai::ws

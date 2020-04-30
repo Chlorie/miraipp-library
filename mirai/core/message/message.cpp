@@ -10,7 +10,9 @@ namespace mirai
         combine_adjacent_text(chain_);
     }
 
-    Message::Message(Segment node): chain_{ std::move(node) } {}
+    Message::Message(const Segment& segment): chain_{ segment } {}
+
+    Message::Message(Segment&& segment): chain_{ std::move(segment) } {}
 
     Message::Message(const std::string_view plain_text):
         chain_({ msg::Plain{ std::string(plain_text) } }) {}
@@ -22,9 +24,15 @@ namespace mirai
         return *this;
     }
 
-    Message& Message::operator=(Segment node)
+    Message& Message::operator=(const Segment& segment)
     {
-        chain_ = MessageChain{ std::move(node) };
+        chain_ = MessageChain{ std::move(segment) };
+        return *this;
+    }
+
+    Message& Message::operator=(Segment&& segment)
+    {
+        chain_ = MessageChain{ std::move(segment) };
         return *this;
     }
 
@@ -34,48 +42,50 @@ namespace mirai
         return *this;
     }
 
-    void Message::push_back(Segment node)
+    Message& Message::operator+=(const MessageChain& chain)
     {
-        if (is_plain(node) && !empty() && is_plain(chain_.back()))
-            get_plain(chain_.back()) += get_plain(node);
-        else
-            chain_.emplace_back(std::move(node));
-    }
-
-    Message& Message::emplace_back(Segment node)
-    {
-        push_back(std::move(node));
-        return *this;
-    }
-
-    Message& Message::operator+=(const Message& message)
-    {
-        if (message.empty()) return *this;
-        push_back(message.chain_.front());
+        if (chain.empty()) return *this;
+        operator+=(chain.front());
         chain_.insert(chain_.end(),
-            std::next(message.chain_.begin()),
-            message.chain_.end());
+            std::next(chain.begin()),
+            chain.end());
         return *this;
     }
 
-    Message& Message::operator+=(Message&& message)
+    Message& Message::operator+=(MessageChain&& chain)
     {
-        if (message.empty()) return *this;
-        push_back(message.chain_.front());
+        if (chain.empty()) return *this;
+        operator+=(chain.front());
         chain_.insert(chain_.end(),
-            std::make_move_iterator(std::next(message.chain_.begin())),
-            std::make_move_iterator(message.chain_.end()));
+            std::make_move_iterator(std::next(chain.begin())),
+            std::make_move_iterator(chain.end()));
         return *this;
     }
 
-    Message& Message::operator+=(Segment node) { return emplace_back(std::move(node)); }
+    Message& Message::operator+=(const Segment& segment)
+    {
+        if (is_plain(segment))
+            return operator+=(get_plain(segment));
+        chain_.emplace_back(segment);
+        return *this;
+    }
+
+    Message& Message::operator+=(Segment&& segment)
+    {
+        if (is_plain(segment))
+            return operator+=(get_plain(segment));
+        chain_.emplace_back(std::move(segment));
+        return *this;
+    }
 
     Message& Message::operator+=(const std::string_view plain_text)
     {
-        return emplace_back(msg::Plain{ std::string(plain_text) });
+        if (!empty() && is_plain(chain_.back()))
+            get_plain(chain_.back()) += plain_text;
+        else
+            chain_.emplace_back(msg::Plain{ std::string(plain_text) });
+        return *this;
     }
-
-    Message operator+(Message lhs, Segment rhs) { return lhs += std::move(rhs); }
 
     bool operator==(const Message& lhs, const std::string_view rhs)
     {

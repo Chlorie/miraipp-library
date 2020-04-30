@@ -22,13 +22,13 @@ namespace mirai
     class Session final
     {
     private:
-        int64_t qq_ = 0;
+        uid_t qq_;
         std::string key_;
         std::unique_ptr<ws::Client> client_;
         std::unique_ptr<asio::thread_pool> thread_pool_;
 
-        std::vector<std::string> send_image_message(utils::OptionalParam<int64_t> qq,
-            utils::OptionalParam<int64_t> group,
+        std::vector<std::string> send_image_message(utils::OptionalParam<uid_t> qq,
+            utils::OptionalParam<gid_t> group,
             utils::ArrayProxy<std::string> urls) const;
 
         std::vector<Event> get_events(std::string_view url, size_t count) const;
@@ -47,7 +47,7 @@ namespace mirai
          * \param auth_key The authorization key
          * \param qq The QQ ID for the bot
          */
-        Session(std::string_view auth_key, int64_t qq);
+        Session(std::string_view auth_key, uid_t qq);
 
         /**
          * \brief Free the resource of a session
@@ -101,7 +101,7 @@ namespace mirai
          * \brief Get QQ of the bot associated with this session
          * \return The QQ number
          */
-        int64_t qq() const { return qq_; }
+        uid_t qq() const { return qq_; }
 
         /**
          * \brief Get the session key
@@ -135,23 +135,23 @@ namespace mirai
 
         /**
          * \brief Send message to a friend
-         * \param target Target QQ to send the message to
+         * \param friend_ Target QQ to send the message to
          * \param msg The message to send
          * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        int32_t send_friend_message(int64_t target, const Message& msg,
-            utils::OptionalParam<int32_t> quote = {}) const;
+        msgid_t send_message(uid_t friend_, const Message& msg,
+            utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
          * \brief Send plain text message to a friend
-         * \param target Target QQ to send the message to
+         * \param friend_ Target QQ to send the message to
          * \param msg The message to send
          * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        int32_t send_friend_message(int64_t target, std::string_view msg,
-            utils::OptionalParam<int32_t> quote = {}) const;
+        msgid_t send_message(uid_t friend_, std::string_view msg,
+            utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
          * \brief Send message to a temporary group member chat
@@ -161,8 +161,8 @@ namespace mirai
          * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        int32_t send_temp_message(int64_t qq, int64_t group, const Message& msg,
-            utils::OptionalParam<int32_t> quote = {}) const;
+        msgid_t send_message(uid_t qq, gid_t group, const Message& msg,
+            utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
          * \brief Send plain text message to a temporary group member chat
@@ -172,8 +172,8 @@ namespace mirai
          * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        int32_t send_temp_message(int64_t qq, int64_t group, std::string_view msg,
-            utils::OptionalParam<int32_t> quote = {}) const;
+        msgid_t send_message(uid_t qq, gid_t group, std::string_view msg,
+            utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
          * \brief Send message to a group
@@ -182,8 +182,8 @@ namespace mirai
          * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        int32_t send_group_message(int64_t target, const Message& msg,
-            utils::OptionalParam<int32_t> quote = {}) const;
+        msgid_t send_message(gid_t target, const Message& msg,
+            utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
          * \brief Send plain text message to a group
@@ -192,29 +192,29 @@ namespace mirai
          * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        int32_t send_group_message(int64_t target, std::string_view msg,
-            utils::OptionalParam<int32_t> quote = {}) const;
+        msgid_t send_message(gid_t target, std::string_view msg,
+            utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
          * \brief Send images to a friend via URLs
-         * \param target Target QQ to send the message to
+         * \param friend_ Target QQ to send the message to
          * \param urls Image URLs
          * \return The ID list of the images
          * \remark This function is supposed to be used only if you
          * need to retrieve image ID from URLs
          */
-        std::vector<std::string> send_friend_image_message(int64_t target,
+        std::vector<std::string> send_image_message(uid_t friend_,
             utils::ArrayProxy<std::string> urls) const;
 
         /**
          * \brief Send images to a group via URLs
-         * \param target Target group to send the message to
+         * \param group Target group to send the message to
          * \param urls Image URLs
          * \return The ID list of the images
          * \remark This function is supposed to be used only if you
          * need to retrieve image ID from URLs
          */
-        std::vector<std::string> send_group_image_message(int64_t target,
+        std::vector<std::string> send_image_message(gid_t group,
             utils::ArrayProxy<std::string> urls) const;
 
         /**
@@ -226,7 +226,7 @@ namespace mirai
          * \remark This function is supposed to be used only if you
          * need to retrieve image ID from URLs
          */
-        std::vector<std::string> send_temp_image_message(int64_t qq, int64_t group,
+        std::vector<std::string> send_image_message(uid_t qq, gid_t group,
             utils::ArrayProxy<std::string> urls) const;
 
         /**
@@ -244,7 +244,7 @@ namespace mirai
          * \param message_id The ID of the message to recall
          * \remarks As for now (mirai core 0.35), recalling friend messages are not supported
          */
-        void recall(int32_t message_id) const;
+        void recall(msgid_t message_id) const;
 
         /**
          * \brief Pop oldest events from the event queue
@@ -285,7 +285,7 @@ namespace mirai
          * \param id The ID of the message
          * \return The message object
          */
-        Event message_from_id(int32_t id) const;
+        Event message_from_id(msgid_t id) const;
 
         /**
          * \brief Get the friend list of the bot
@@ -304,34 +304,34 @@ namespace mirai
          * \param target The group ID
          * \return A vector of members
          */
-        std::vector<Member> member_list(int64_t target) const;
+        std::vector<Member> member_list(gid_t target) const;
 
         /**
          * \brief Mute a group
          * \param target The group ID
          */
-        void mute_all(int64_t target) const;
+        void mute_all(gid_t target) const;
 
         /**
          * \brief Unmute a group
          * \param target The group ID
          */
-        void unmute_all(int64_t target) const;
+        void unmute_all(gid_t target) const;
 
         /**
          * \brief Mute a group member
          * \param group The group ID
          * \param member The member ID
-         * \param time_in_seconds Mute duration in seconds
+         * \param duration Mute duration
          */
-        void mute(int64_t group, int64_t member, int32_t time_in_seconds = 0) const;
+        void mute(gid_t group, uid_t member, std::chrono::seconds duration = {}) const;
 
         /**
          * \brief Unmute a group member
          * \param group The group ID
          * \param member The member ID
          */
-        void unmute(int64_t group, int64_t member) const;
+        void unmute(gid_t group, uid_t member) const;
 
         /**
          * \brief Kick a group member
@@ -339,7 +339,13 @@ namespace mirai
          * \param member The member ID
          * \param message The remark message for kicking the member
          */
-        void kick(int64_t group, int64_t member, std::string_view message = "") const;
+        void kick(gid_t group, uid_t member, std::string_view message = "") const;
+
+        /**
+         * \brief Quit from a group chat
+         * \param group The group ID
+         */
+        void quit(gid_t group) const;
 
         /**
          * \brief Respond to a new friend request event
@@ -364,14 +370,14 @@ namespace mirai
          * \param target The group ID
          * \param config The config to set
          */
-        void group_config(int64_t target, const GroupConfig& config) const;
+        void group_config(gid_t target, const GroupConfig& config) const;
 
         /**
          * \brief Get a group's config
          * \param target The group ID
          * \return The result
          */
-        GroupConfig group_config(int64_t target) const;
+        GroupConfig group_config(gid_t target) const;
 
         /**
          * \brief Modify a group member's info
@@ -380,7 +386,7 @@ namespace mirai
          * \param name The new name for the member
          * \param special_title The new special title for the member
          */
-        void member_info(int64_t group, int64_t member,
+        void member_info(gid_t group, uid_t member,
             utils::OptionalParam<std::string_view> name,
             utils::OptionalParam<std::string_view> special_title) const;
 
@@ -390,7 +396,7 @@ namespace mirai
          * \param member The member ID
          * \return The result
          */
-        MemberInfo member_info(int64_t group, int64_t member) const;
+        MemberInfo member_info(gid_t group, uid_t member) const;
 
         /**
          * \brief Close the websocket client, outstanding connections will

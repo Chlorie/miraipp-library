@@ -1,9 +1,96 @@
 #pragma once
 
 #include "../utils/json_extensions.h"
+#include "../utils/adaptor.h"
 
 namespace mirai
 {
+    /**
+     * \brief A type representing the QQ id of a user
+     */
+    struct uid_t final
+    {
+        int64_t id = 0;
+
+        /**
+         * \brief Construct a default user id with the value 0
+         */
+        constexpr uid_t() = default;
+
+        /**
+         * \brief Construct a user id
+         * \param id The id
+         */
+        constexpr explicit uid_t(const int64_t id): id(id) {}
+
+        /**
+         * \brief Implicitly convert to int64_t
+         */
+        constexpr operator int64_t() const { return id; }
+    };
+
+    /**
+     * \brief A type representing the id of a group
+     */
+    struct gid_t final
+    {
+        int64_t id = 0;
+
+        /**
+         * \brief Construct a default group id with the value 0
+         */
+        constexpr gid_t() = default;
+
+        /**
+         * \brief Construct a group id
+         * \param id The id
+         */
+        constexpr explicit gid_t(const int64_t id): id(id) {}
+
+        /**
+         * \brief Implicitly convert to int64_t
+         */
+        constexpr operator int64_t() const { return id; }
+    };
+
+    /**
+     * \brief A type representing the id of a message
+     */
+    struct msgid_t final
+    {
+        int32_t id = 0;
+
+        /**
+         * \brief Construct a message id
+         * \param id The id
+         */
+        constexpr explicit msgid_t(const int32_t id = 0): id(id) {}
+
+        /**
+         * \brief Implicitly convert to int64_t
+         */
+        constexpr operator int32_t() const { return id; }
+    };
+
+    namespace literals
+    {
+        using namespace std::literals;
+
+        /**
+         * \brief Construct a user id
+         * \param id The id
+         * \return A user id object
+         */
+        constexpr uid_t operator""_uid(const uint64_t id) { return uid_t(static_cast<int64_t>(id)); }
+
+        /**
+         * \brief Construct a group id
+         * \param id The id
+         * \return A group id object
+         */
+        constexpr gid_t operator""_gid(const uint64_t id) { return gid_t(static_cast<int64_t>(id)); }
+    }
+
     /**
      * \brief Execution policy of event processing
      */
@@ -36,7 +123,7 @@ namespace mirai
      */
     struct Group final
     {
-        int64_t id = 0; ///< ID of the group
+        gid_t id; ///< ID of the group
         std::string name; ///< Name of the group
         Permission permission{}; ///< The permission of the bot in the group
     };
@@ -46,7 +133,7 @@ namespace mirai
      */
     struct Member final
     {
-        int64_t id = 0; ///< ID of the member
+        uid_t id; ///< ID of the member
         std::string member_name; ///< Name of the member
         Permission permission{}; ///< The permission of the group member
         Group group; ///< Information about the group
@@ -57,7 +144,7 @@ namespace mirai
      */
     struct Friend final
     {
-        int64_t id = 0; ///< ID of the friend
+        uid_t id; ///< ID of the friend
         std::string nickname; ///< Nickname of the friend
         std::string remark; ///< Remark of the friend
     };
@@ -94,6 +181,13 @@ namespace mirai
         size_t cache_size = 4096; ///< Cache size of the session
         bool enable_websocket = false; ///< Whether websocket is enabled for this session
     };
+
+    inline void to_json(utils::json& json, const uid_t value) { json = value.id; }
+    inline void from_json(const utils::json& json, uid_t& value) { json.get_to(value.id); }
+    inline void to_json(utils::json& json, const gid_t value) { json = value.id; }
+    inline void from_json(const utils::json& json, gid_t& value) { json.get_to(value.id); }
+    inline void to_json(utils::json& json, const msgid_t value) { json = value.id; }
+    inline void from_json(const utils::json& json, msgid_t& value) { json.get_to(value.id); }
 
     void from_json(const utils::json& json, Group& value);
     void from_json(const utils::json& json, Member& value);

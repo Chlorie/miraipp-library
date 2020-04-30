@@ -1,13 +1,12 @@
 #pragma once
 
-#include <unordered_map>
 #include "connection.h"
 #include "../../utils/thread.h"
 
 namespace mirai::ws
 {
     namespace wspp = websocketpp;
-
+    
     /**
      * \brief WebSocket client
      */

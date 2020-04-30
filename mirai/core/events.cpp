@@ -71,13 +71,25 @@ namespace mirai
 
     void from_json(const utils::json& json, BotMuteEvent& value)
     {
-        json.at("durationSeconds").get_to(value.duration_seconds);
+        uint32_t count;
+        json.at("durationSeconds").get_to(count);
+        value.duration = std::chrono::seconds(count);
         json.at("operator").get_to(value.operator_);
     }
 
     void from_json(const utils::json& json, BotUnmuteEvent& value)
     {
         json.at("operator").get_to(value.operator_);
+    }
+
+    void from_json(const utils::json& json, BotLeaveEventActive& value)
+    {
+        json.at("group").get_to(value.group);    
+    }
+
+    void from_json(const utils::json& json, BotLeaveEventKick& value)
+    {
+        json.at("group").get_to(value.group);
     }
 
     void from_json(const utils::json& json, BotJoinGroupEvent& value)
@@ -90,7 +102,7 @@ namespace mirai
         json.at("origin").get_to(value.origin);
         json.at("current").get_to(value.current);
         json.at("group").get_to(value.group);
-        json.at("isByBot").get_to(value.is_by_bot);
+        json.at("operator").get_to(value.operator_);
     }
 
     void from_json(const utils::json& json, GroupEntranceAnnouncementChangeEvent& value)
@@ -173,7 +185,9 @@ namespace mirai
 
     void from_json(const utils::json& json, MemberMuteEvent& value)
     {
-        json.at("durationSeconds").get_to(value.duration_seconds);
+        uint32_t count;
+        json.at("durationSeconds").get_to(count);
+        value.duration = std::chrono::seconds(count);
         json.at("member").get_to(value.member);
         json.at("operator").get_to(value.operator_);
     }
@@ -188,7 +202,7 @@ namespace mirai
     {
         json.at("eventId").get_to(value.event_id);
         json.at("fromId").get_to(value.from_id);
-        const int64_t group_id = json.at("groupId").get<int64_t>();
+        const gid_t group_id = json.at("groupId").get<gid_t>();
         if (group_id != 0) value.group_id = group_id;
         json.at("nick").get_to(value.nick);
     }

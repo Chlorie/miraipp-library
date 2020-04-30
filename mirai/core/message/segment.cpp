@@ -93,7 +93,6 @@ namespace mirai
                 { "id", value.id },
                 { "groupId", value.group_id },
                 { "senderId", value.sender_id },
-                { "targetId", value.target_id },
                 { "origin", value.origin }
             };
         }
@@ -103,7 +102,6 @@ namespace mirai
             json.at("id").get_to(value.id);
             json.at("groupId").get_to(value.group_id);
             json.at("senderId").get_to(value.sender_id);
-            json.at("targetId").get_to(value.target_id);
             json.at("origin").get_to(value.origin);
             // This is an issue where there's an At segment with target = 0 at the beginning
             if (!value.origin.empty())
