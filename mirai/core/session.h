@@ -110,6 +110,12 @@ namespace mirai
         std::string_view key() const { return key_; }
 
         /**
+         * \brief Get an "At" message segment with the target being the bot
+         * \return The message segment
+         */
+        msg::At at_self() const { return { qq_ }; }
+
+        /**
          * \brief Query whether the thread pool is started
          * \return The result
          */

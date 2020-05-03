@@ -2,6 +2,7 @@
 #include <sstream>
 #include "common.h"
 #include "../common.h"
+#include "../../utils/string.h"
 
 namespace mirai
 {
@@ -26,7 +27,7 @@ namespace mirai
 
     Message& Message::operator=(const Segment& segment)
     {
-        chain_ = MessageChain{ std::move(segment) };
+        chain_ = MessageChain{ segment };
         return *this;
     }
 
@@ -112,18 +113,31 @@ namespace mirai
     bool Message::starts_with(const std::string_view text) const
     {
         if (chain_.empty() || !is_plain(chain_.front())) return false;
-        const std::string_view prefix = std::string_view(get_plain(chain_.front()))
-           .substr(0, text.size());
-        return prefix == text;
+        return utils::starts_with(get_plain(chain_.front()), text);
+    }
+
+    bool Message::starts_with(const Segment& segment) const
+    {
+        if (is_plain(segment))
+            return starts_with(get_plain(segment));
+        if (chain_.empty())
+            return false;
+        return chain_.front() == segment;
     }
 
     bool Message::ends_with(const std::string_view text) const
     {
         if (chain_.empty() || !is_plain(chain_.back())) return false;
-        const std::string_view last = std::string_view(get_plain(chain_.back()));
-        if (last.size() < text.size()) return false;
-        const std::string_view suffix = last.substr(last.size() - text.size());
-        return suffix == text;
+        return utils::ends_with(get_plain(chain_.front()), text);
+    }
+
+    bool Message::ends_with(const Segment& segment) const
+    {
+        if (is_plain(segment))
+            return ends_with(get_plain(segment));
+        if (chain_.empty())
+            return false;
+        return chain_.back() == segment;
     }
 
     bool Message::contains(const std::string_view text) const
@@ -134,6 +148,13 @@ namespace mirai
                 return is_plain(seg)
                     && (get_plain(seg).find(text) != std::string::npos);
             });
+    }
+
+    bool Message::contains(const Segment& segment) const
+    {
+        if (is_plain(segment))
+            return contains(get_plain(segment));
+        return std::find(chain_.begin(), chain_.end(), segment) != chain_.end();
     }
 
     std::string Message::escape(const std::string_view unescaped)

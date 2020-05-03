@@ -2,12 +2,12 @@
 
 #include <string_view>
 #include <vector>
+#include <optional>
+#include "segment_fwd.h"
 #include "../../utils/adaptor.h"
 
 namespace mirai
 {
-    class Segment;
-
     /**
      * \brief A collection of segments, being the whole message chain
      */
@@ -110,6 +110,78 @@ namespace mirai
         bool empty() const { return chain_.empty(); }
 
         /**
+         * \brief Get the begin iterator
+         * \return Begin iterator of the message chain
+         */
+        auto begin() { return chain_.begin(); }
+
+        /**
+         * \brief Get the end iterator
+         * \return End iterator of the message chain
+         */
+        auto end() { return chain_.end(); }
+
+        /**
+         * \brief Get the begin const iterator
+         * \return Begin const iterator of the message chain
+         */
+        auto begin() const { return chain_.begin(); }
+
+        /**
+         * \brief Get the end const iterator
+         * \return End const iterator of the message chain
+         */
+        auto end() const { return chain_.end(); }
+
+        /**
+         * \brief Get the begin const iterator
+         * \return Begin const iterator of the message chain
+         */
+        auto cbegin() const { return chain_.cbegin(); }
+
+        /**
+         * \brief Get the end iterator
+         * \return End const iterator of the message chain
+         */
+        auto cend() const { return chain_.cend(); }
+
+        /**
+         * \brief Get the begin reverse iterator
+         * \return Begin reverse iterator of the message chain
+         */
+        auto rbegin() { return chain_.rbegin(); }
+
+        /**
+         * \brief Get the end reverse iterator
+         * \return End reverse iterator of the message chain
+         */
+        auto rend() { return chain_.rend(); }
+
+        /**
+         * \brief Get the begin const reverse iterator
+         * \return Begin const reverse iterator of the message chain
+         */
+        auto rbegin() const { return chain_.rbegin(); }
+
+        /**
+         * \brief Get the end const reverse iterator
+         * \return End const reverse iterator of the message chain
+         */
+        auto rend() const { return chain_.rend(); }
+
+        /**
+         * \brief Get the begin const reverse iterator
+         * \return Begin const reverse iterator of the message chain
+         */
+        auto crbegin() const { return chain_.crbegin(); }
+
+        /**
+         * \brief Get the end reverse iterator
+         * \return End const reverse iterator of the message chain
+         */
+        auto crend() const { return chain_.crend(); }
+
+        /**
          * \brief Append a message chain to this message
          * \param chain The message chain to append
          * \return Reference to this message
@@ -202,6 +274,13 @@ namespace mirai
         bool starts_with(std::string_view text) const;
 
         /**
+         * \brief Check whether the message starts with the given segment
+         * \param segment The message segment
+         * \return The result
+         */
+        bool starts_with(const Segment& segment) const;
+
+        /**
          * \brief Check whether the message ends with the given string
          * \param text The plain text string
          * \return The result
@@ -209,11 +288,44 @@ namespace mirai
         bool ends_with(std::string_view text) const;
 
         /**
+         * \brief Check whether the message ends with the given segment
+         * \param segment The message segment
+         * \return The result
+         */
+        bool ends_with(const Segment& segment) const;
+
+        /**
          * \brief Check whether the message contains the given string
          * \param text The plain text string
          * \return The result
          */
         bool contains(std::string_view text) const;
+
+        /**
+         * \brief Check whether the message contains the given segment
+         * \param segment The message segment
+         * \return The result
+         */
+        bool contains(const Segment& segment) const;
+
+        /**
+         * \brief Match the types to the message chain, and get a tuple if matches
+         * \tparam Ts The types of segment to match
+         * \return An optional tuple, containing references to the segments if
+         * the types match, containing nullopt otherwise
+         * \remarks See segment.h for the implementation
+         */
+        template <typename... Ts, detail::enable_match<Ts...>* = nullptr>
+        detail::match_result<Ts...> match_types() const;
+
+        /**
+         * \brief Match the types to the message chain, and get a tuple if matches
+         * \tparam Ts The types (enum) of segment to match
+         * \return An optional tuple, containing references to the segments if
+         * the types match, containing nullopt otherwise
+         */
+        template <SegmentType... Ts>
+        auto match_types() const { return match_types<detail::segment_type<Ts>...>(); }
 
         /**
          * \brief Escape a string for stringification

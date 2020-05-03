@@ -98,11 +98,19 @@ namespace mirai
         struct Plain final
         {
             std::string text;
+
             /**
              * \brief Get a string representation of this object
              * \return The string
              */
             std::string stringify() const { return Message::escape(text); }
+
+            /**
+             * \brief Get a string view of the text
+             * \return The string view
+             */
+            std::string_view view() const { return text; }
+
             friend bool operator==(const Plain& lhs, const Plain& rhs) { return lhs.text == rhs.text; }
             friend bool operator!=(const Plain& lhs, const Plain& rhs) { return !(lhs == rhs); }
         };
@@ -271,4 +279,24 @@ namespace mirai
     void from_json(const utils::json& json, Segment& value);
     void to_json(utils::json& json, const Message& value);
     void from_json(const utils::json& json, Message& value);
+
+    namespace detail
+    {
+        template <typename... Ts, size_t... Idx>
+        match_result<Ts...> match_types_impl(const Message& msg, std::index_sequence<Idx...>)
+        {
+            if (msg.size() != sizeof...(Ts)) return {}; // Sizes don't match
+            const std::tuple ptrs{ msg.chain()[Idx].template get_if<Ts>()... }; // Get pointers
+            const bool contains_nullptr = ((std::get<Idx>(ptrs) == nullptr) || ...);
+            if (contains_nullptr) return {}; // At least one type doesn't match
+            return std::tuple<const Ts&...>{ *std::get<Idx>(ptrs)... }; // Return result
+        }
+    }
+
+    // Implementation of Message::match_types
+    template <typename... Ts, detail::enable_match<Ts...>*>
+    detail::match_result<Ts...> Message::match_types() const
+    {
+        return detail::match_types_impl<Ts...>(*this, std::index_sequence_for<Ts...>{});
+    }
 }

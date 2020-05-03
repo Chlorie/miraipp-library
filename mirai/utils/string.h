@@ -30,6 +30,53 @@ namespace mirai::utils
      */
     template <typename T> size_t strlen(const T& str) { return str.length(); }
 
+    /**
+     * \brief Check whether the string starts with the prefix
+     * \param str The string
+     * \param prefix The prefix
+     * \return The result
+     */
+    inline bool starts_with(const std::string_view str, const std::string_view prefix)
+    {
+        return str.substr(0, prefix.size()) == prefix;
+    }
+
+    /**
+     * \brief Check whether the string ends with the suffix
+     * \param str The string
+     * \param suffix The suffix
+     * \return The result
+     */
+    inline bool ends_with(const std::string_view str, const std::string_view suffix)
+    {
+        if (str.size() < suffix.size()) return false;
+        return str.substr(str.size() - suffix.size()) == suffix;
+    }
+
+    /**
+     * \brief Remove prefix from a string and returns the result string view
+     * \param str The string
+     * \param count Character count to remove
+     * \return The new string view
+     */
+    inline std::string_view remove_prefix(std::string_view str, const size_t count)
+    {
+        str.remove_prefix(count);
+        return str;
+    }
+
+    /**
+     * \brief Remove suffix from a string and returns the result string view
+     * \param str The string
+     * \param count Character count to remove
+     * \return The new string view
+     */
+    inline std::string_view remove_suffix(std::string_view str, const size_t count)
+    {
+        str.remove_suffix(count);
+        return str;
+    }
+
     namespace detail
     {
         template <typename... Ts, size_t... Idx>

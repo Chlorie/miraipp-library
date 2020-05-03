@@ -6,7 +6,8 @@ set(SOURCE_FILES
     "mirai/core/message/message.cpp" "mirai/core/message/segment.cpp"
     "mirai/core/message/common.cpp" "mirai/core/message/received_message.cpp"
     "mirai/core/websockets/client.cpp" "mirai/core/websockets/connection.cpp"
-    "mirai/utils/thread.cpp" "mirai/utils/encoding.cpp" "mirai/utils/request.cpp"
+    "mirai/utils/thread.cpp" "mirai/utils/encoding.cpp"
+    "mirai/utils/request.cpp"
 ) 
 
 add_library(miraipp ${SOURCE_FILES})
