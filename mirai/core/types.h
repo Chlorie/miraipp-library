@@ -81,14 +81,14 @@ namespace mirai
          * \param id The id
          * \return A user id object
          */
-        constexpr uid_t operator""_uid(const uint64_t id) { return uid_t(static_cast<int64_t>(id)); }
+        constexpr uid_t operator""_uid(const unsigned long long id) { return uid_t(static_cast<int64_t>(id)); }
 
         /**
          * \brief Construct a group id
          * \param id The id
          * \return A group id object
          */
-        constexpr gid_t operator""_gid(const uint64_t id) { return gid_t(static_cast<int64_t>(id)); }
+        constexpr gid_t operator""_gid(const unsigned long long id) { return gid_t(static_cast<int64_t>(id)); }
     }
 
     /**
