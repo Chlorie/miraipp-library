@@ -261,7 +261,7 @@ namespace mirai
             std::index_sequence<I...>)
         {
             const std::string& type = json.at("type").get_ref<const std::string&>();
-            ((type == msg_types[I]
+            ((type == msg_type_names[I]
                   ? (void)(value = Segment(json.get<std::variant_alternative_t<I, msg::Variant>>()))
                   : (void)0), ...);
         }

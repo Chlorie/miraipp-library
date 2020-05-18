@@ -218,25 +218,12 @@ namespace mirai
 
     namespace
     {
-        constexpr std::array<std::string_view, std::variant_size_v<EventVariant>> event_types
-        {
-            "GroupMessage", "FriendMessage", "TempMessage",
-            "BotOnlineEvent", "BotOfflineEventActive", "BotOfflineEventForce", "BotOfflineEventDropped",
-            "BotReloginEvent", "GroupRecallEvent", "FriendRecallEvent", "BotGroupPermissionChangeEvent",
-            "BotMuteEvent", "BotUnmuteEvent", "BotJoinGroupEvent", "GroupNameChangeEvent",
-            "GroupEntranceAnnouncementChangeEvent", "GroupMuteAllEvent", "GroupAllowAnonymousChatEvent",
-            "GroupAllowConfessTalkEvent", "GroupAllowMemberInviteEvent", "MemberJoinEvent",
-            "MemberLeaveEventKick", "MemberLeaveEventQuit", "MemberCardChangeEvent",
-            "MemberSpecialTitleChangeEvent", "MemberPermissionChangeEvent", "MemberMuteEvent",
-            "MemberUnmuteEvent", "NewFriendRequestEvent", "MemberJoinRequestEvent"
-        };
-
         template <size_t... I>
         void event_from_json_impl(const utils::json& json, Event& value,
             std::index_sequence<I...>)
         {
             const std::string& type = json.at("type").get_ref<const std::string&>();
-            ((type == event_types[I]
+            ((type == event_type_names[I]
                   ? (void)(value = Event(json.get<std::variant_alternative_t<I, EventVariant>>()))
                   : (void)0), ...);
         }

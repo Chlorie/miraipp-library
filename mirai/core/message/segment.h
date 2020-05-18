@@ -254,8 +254,12 @@ namespace mirai
     enum class SegmentType
     {
         at, at_all, face, plain, image,
-        flash_image, xml, json, app, poke
+        flash_image, xml, json, app, poke,
+        max_value
     };
+
+    static_assert(std::variant_size_v<msg::Variant> == static_cast<size_t>(SegmentType::max_value),
+        "Mismatched enum and variant size (Segment)");
 
     /**
      * \brief Type representing a single segment in the message chain

@@ -6,7 +6,7 @@
 
 namespace mirai
 {
-    constexpr std::array<std::string_view, std::variant_size_v<msg::Variant>> msg_types
+    constexpr std::array<std::string_view, std::variant_size_v<msg::Variant>> msg_type_names
     {
         "At", "AtAll", "Face", "Plain", "Image",
         "FlashImage", "Xml", "Json", "App", "Poke"

@@ -391,7 +391,23 @@ namespace mirai
         group_allow_anonymous_chat_event, group_allow_confess_talk_event, group_allow_member_invite_event,
         member_join_event, member_leave_event_kick, member_leave_event_quit, member_card_change_event,
         member_special_title_change_event, member_permission_change_event, member_mute_event,
-        member_unmute_event, new_friend_request_event, member_join_request_event
+        member_unmute_event, new_friend_request_event, member_join_request_event, max_value
+    };
+
+    static_assert(std::variant_size_v<EventVariant> == static_cast<size_t>(EventType::max_value),
+        "Mismatched enum and variant size (Event)");
+
+    inline constexpr std::array<std::string_view, std::variant_size_v<EventVariant>> event_type_names
+    {
+        "GroupMessage", "FriendMessage", "TempMessage",
+        "BotOnlineEvent", "BotOfflineEventActive", "BotOfflineEventForce", "BotOfflineEventDropped",
+        "BotReloginEvent", "GroupRecallEvent", "FriendRecallEvent", "BotGroupPermissionChangeEvent",
+        "BotMuteEvent", "BotUnmuteEvent", "BotJoinGroupEvent", "GroupNameChangeEvent",
+        "GroupEntranceAnnouncementChangeEvent", "GroupMuteAllEvent", "GroupAllowAnonymousChatEvent",
+        "GroupAllowConfessTalkEvent", "GroupAllowMemberInviteEvent", "MemberJoinEvent",
+        "MemberLeaveEventKick", "MemberLeaveEventQuit", "MemberCardChangeEvent",
+        "MemberSpecialTitleChangeEvent", "MemberPermissionChangeEvent", "MemberMuteEvent",
+        "MemberUnmuteEvent", "NewFriendRequestEvent", "MemberJoinRequestEvent"
     };
 
     /**
