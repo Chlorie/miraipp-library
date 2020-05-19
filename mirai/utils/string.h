@@ -77,6 +77,20 @@ namespace mirai::utils
         return str;
     }
 
+    /**
+     * \brief Remove leading and trailing whitespace characters
+     * \param str The string
+     * \return The new string view
+     */
+    inline std::string_view trim_whitespace(std::string_view str)
+    {
+        str.remove_prefix(std::min(str.find_first_not_of(" \t\r\n\v\f"), str.size()));
+        const size_t last = str.find_last_not_of(" \t\r\n\v\f");
+        if (last == std::string_view::npos) return {};
+        str.remove_suffix(str.size() - 1 - last);
+        return str;
+    }
+
     namespace detail
     {
         template <typename... Ts, size_t... Idx>

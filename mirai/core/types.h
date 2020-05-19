@@ -200,3 +200,34 @@ namespace mirai
     void to_json(utils::json& json, const SessionConfig& value);
     void from_json(const utils::json& json, SessionConfig& value);
 }
+
+// Provides hash function for using uid_t etc. as hash map key
+namespace std
+{
+    template <>
+    struct hash<mirai::uid_t>
+    {
+        auto operator()(const mirai::uid_t value) const noexcept
+        {
+            return hash<int64_t>()(value.id);
+        }
+    };
+
+    template <>
+    struct hash<mirai::gid_t>
+    {
+        auto operator()(const mirai::gid_t value) const noexcept
+        {
+            return hash<int64_t>()(value.id);
+        }
+    };
+
+    template <>
+    struct hash<mirai::msgid_t>
+    {
+        auto operator()(const mirai::msgid_t value) const noexcept
+        {
+            return hash<int32_t>()(value.id);
+        }
+    };
+}

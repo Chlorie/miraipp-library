@@ -33,7 +33,7 @@ find_package(OpenSSL REQUIRED)
 find_package(asio CONFIG REQUIRED)
 find_package(unofficial-iconv CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(miraipp PUBLIC 
+target_link_libraries(miraipp PUBLIC
     cpr
     websocketpp::websocketpp
     OpenSSL::SSL OpenSSL::Crypto

@@ -408,7 +408,7 @@ namespace mirai
          * \brief Close the websocket client, outstanding connections will
          * also be closed
          */
-        void close_websocket_client();
+        void close_websocket_client() { client_.reset(); }
 
         /**
          * \brief Close a WebSocket connection

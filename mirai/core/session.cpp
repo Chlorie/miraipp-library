@@ -55,6 +55,7 @@ namespace mirai
         if (qq_ == 0) return; // Invalid session
         try
         {
+            close_websocket_client();
             destroy_thread_pool();
             utils::post_json("/release", {
                 { "sessionKey", key_ },
@@ -400,12 +401,6 @@ namespace mirai
             { "memberId", std::to_string(member) },
         });
         return res.get<MemberInfo>();
-    }
-
-    void Session::close_websocket_client()
-    {
-        if (websocket_client_started())
-            client_.reset();
     }
 
     void Session::close_connection(ws::Connection& connection) { client_->close(connection); }
