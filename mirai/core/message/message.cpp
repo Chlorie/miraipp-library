@@ -11,10 +11,6 @@ namespace mirai
         combine_adjacent_text(chain_);
     }
 
-    Message::Message(const Segment& segment): chain_{ segment } {}
-
-    Message::Message(Segment&& segment): chain_{ std::move(segment) } {}
-
     Message::Message(const std::string_view plain_text):
         chain_({ msg::Plain{ std::string(plain_text) } }) {}
 
@@ -97,7 +93,7 @@ namespace mirai
     std::string Message::extract_text() const
     {
         std::string res;
-        for (auto& node : chain_)
+        for (const auto& node : chain_)
             node.dispatch([&res](const msg::Plain& plain) { res += plain.text; });
         return res;
     }
@@ -155,6 +151,11 @@ namespace mirai
         if (is_plain(segment))
             return contains(get_plain(segment));
         return std::find(chain_.begin(), chain_.end(), segment) != chain_.end();
+    }
+
+    bool Message::is_text_only() const
+    {
+        return size() == 1 && chain_[0].type() == SegmentType::plain;
     }
 
     std::string Message::escape(const std::string_view unescaped)

@@ -118,12 +118,6 @@ namespace mirai
         return res.at("messageId").get<msgid_t>();
     }
 
-    msgid_t Session::send_message(const uid_t friend_,
-        const std::string_view msg, const utils::OptionalParam<msgid_t> quote) const
-    {
-        return send_message(friend_, Message(msg), quote);
-    }
-
     msgid_t Session::send_message(const uid_t qq, const gid_t group,
         const Message& msg, const utils::OptionalParam<msgid_t> quote) const
     {
@@ -137,12 +131,6 @@ namespace mirai
         const auto res = utils::post_json("/sendTempMessage", json);
         utils::check_response(res);
         return res.at("messageId").get<msgid_t>();
-    }
-
-    msgid_t Session::send_message(const uid_t qq, const gid_t group,
-        const std::string_view msg, const utils::OptionalParam<msgid_t> quote) const
-    {
-        return send_message(qq, group, Message(msg), quote);
     }
 
     msgid_t Session::send_message(const gid_t target,
@@ -159,10 +147,19 @@ namespace mirai
         return res.at("messageId").get<msgid_t>();
     }
 
-    msgid_t Session::send_message(const gid_t target,
-        const std::string_view msg, const utils::OptionalParam<msgid_t> quote) const
+    msgid_t Session::send_quote_message(const FriendMessage& quote, const Message& msg) const
     {
-        return send_message(target, Message(msg), quote);
+        return send_message(quote.sender.id, msg, quote.message.source.id);
+    }
+
+    msgid_t Session::send_quote_message(const TempMessage& quote, const Message& msg) const
+    {
+        return send_message(quote.sender.id, quote.sender.group.id, msg, quote.message.source.id);
+    }
+
+    msgid_t Session::send_quote_message(const GroupMessage& quote, const Message& msg) const
+    {
+        return send_message(quote.sender.group.id, msg, quote.message.source.id);
     }
 
     std::vector<std::string> Session::send_image_message(

@@ -150,16 +150,6 @@ namespace mirai
             utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
-         * \brief Send plain text message to a friend
-         * \param friend_ Target QQ to send the message to
-         * \param msg The message to send
-         * \param quote The message to be quoted (optional)
-         * \return The message ID of the message sent
-         */
-        msgid_t send_message(uid_t friend_, std::string_view msg,
-            utils::OptionalParam<msgid_t> quote = {}) const;
-
-        /**
          * \brief Send message to a temporary group member chat
          * \param qq Target QQ to send the message to
          * \param group Target group to start the temporary chat
@@ -168,17 +158,6 @@ namespace mirai
          * \return The message ID of the message sent
          */
         msgid_t send_message(uid_t qq, gid_t group, const Message& msg,
-            utils::OptionalParam<msgid_t> quote = {}) const;
-
-        /**
-         * \brief Send plain text message to a temporary group member chat
-         * \param qq Target QQ to send the message to
-         * \param group Target group to start the temporary chat
-         * \param msg The message to send
-         * \param quote The message to be quoted (optional)
-         * \return The message ID of the message sent
-         */
-        msgid_t send_message(uid_t qq, gid_t group, std::string_view msg,
             utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
@@ -192,14 +171,28 @@ namespace mirai
             utils::OptionalParam<msgid_t> quote = {}) const;
 
         /**
-         * \brief Send plain text message to a group
-         * \param target Target group to send the message to
+         * \brief Quote reply a friend message
+         * \param quote The friend message to quote
          * \param msg The message to send
-         * \param quote The message to be quoted (optional)
          * \return The message ID of the message sent
          */
-        msgid_t send_message(gid_t target, std::string_view msg,
-            utils::OptionalParam<msgid_t> quote = {}) const;
+        msgid_t send_quote_message(const FriendMessage& quote, const Message& msg) const;
+
+        /**
+         * \brief Quote reply a temporary message
+         * \param quote The temporary message to quote
+         * \param msg The message to send
+         * \return The message ID of the message sent
+         */
+        msgid_t send_quote_message(const TempMessage& quote, const Message& msg) const;
+
+        /**
+         * \brief Quote reply a group message
+         * \param quote The group message to quote
+         * \param msg The message to send
+         * \return The message ID of the message sent
+         */
+        msgid_t send_quote_message(const GroupMessage& quote, const Message& msg) const;
 
         /**
          * \brief Send images to a friend via URLs

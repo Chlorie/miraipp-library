@@ -137,6 +137,12 @@ namespace mirai
         std::string member_name; ///< Name of the member
         Permission permission{}; ///< The permission of the group member
         Group group; ///< Information about the group
+
+        /**
+         * \brief Compare permission level
+         * \return Whether the bot has higher permission than this member
+         */
+        bool bot_has_higher_permission() const { return group.permission > permission; }
     };
 
     /**

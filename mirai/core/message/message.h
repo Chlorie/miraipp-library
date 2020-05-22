@@ -5,6 +5,7 @@
 #include <optional>
 #include "segment_fwd.h"
 #include "../../utils/adaptor.h"
+#include "../../utils/vector_ext.h"
 
 namespace mirai
 {
@@ -13,20 +14,37 @@ namespace mirai
      */
     using MessageChain = std::vector<Segment>;
 
+    namespace detail
+    {
+        template <typename T>
+        inline constexpr bool is_sv_like_v =
+            !std::is_same_v<T, std::string_view> && std::is_convertible_v<T, std::string_view>;
+        template <typename T>
+        struct is_sv_like : std::bool_constant<is_sv_like_v<T>> {};
+
+        // Workaround for an issue in VS2019 16.6
+        template <typename... Segments>
+        constexpr bool all_segments = (detail::is_segment_type_or_segment<std::decay_t<Segments>> && ...);
+    }
+
     /**
      * \brief A message type wrapping message chain, containing member functions
      * for better manipulating and consuming of the messages.
+     * \remarks The class automatically combines adjacent plain text segments
      */
     class Message final :
         public adp::Equal<Message>,
         public adp::Equal<Message, std::string_view>,
+        public adp::EqualConstrained<Message, detail::is_sv_like>,
         public adp::Concatenate<Message, Message>,
         public adp::Concatenate<Message, MessageChain>,
         public adp::Concatenate<Message, Segment>,
-        public adp::Concatenate<Message, std::string_view>
+        public adp::Concatenate<Message, std::string_view>,
+        public adp::ConcatenateConstrained<Message, detail::is_sv_like>
     {
     private:
         MessageChain chain_;
+
     public:
         /**
          * \brief Create an empty message
@@ -40,22 +58,32 @@ namespace mirai
         explicit Message(MessageChain chain);
 
         /**
-         * \brief Construct a message with a single segment
-         * \param segment The message chain node
+         * \brief Construct a message using a list of message segments
+         * \tparam Segments Types of the segments
+         * \param segments The segments
+         * \remarks This overload simulates a std::initializer_list, but this enables
+         * move semantics (long temporary strings won't be copied)
          */
-        explicit Message(const Segment& segment);
-
-        /**
-         * \brief Construct a message with a single segment
-         * \param segment The message chain node
-         */
-        explicit Message(Segment&& segment);
+        template <typename... Segments,
+            std::enable_if_t<detail::all_segments<Segments...>>* = nullptr>
+        explicit Message(Segments&&... segments):
+            Message(utils::make_vector<Segment>(std::forward<Segments>(segments)...)) {}
 
         /**
          * \brief Construct a message using a plain text string
          * \param plain_text The plain text string
          */
-        explicit Message(std::string_view plain_text);
+        Message(std::string_view plain_text);
+
+        /**
+         * \brief Construct a message using a plain text string
+         * \tparam T Type of the string_view like object
+         * \param plain_text The plain text string
+         * \remarks This overload exists for enabling implicit converting from const char*
+         * or const char(&)[N] to Message
+         */
+        template <typename T, std::enable_if_t<detail::is_sv_like_v<T>>* = nullptr>
+        Message(const T& plain_text): Message(std::string_view(plain_text)) {}
 
         /**
          * \brief Assign a message chain to this object
@@ -182,6 +210,16 @@ namespace mirai
         auto crend() const { return chain_.crend(); }
 
         /**
+         * \brief Get a segment in the message chain
+         */
+        auto& operator[](const size_t index) { return chain_[index]; }
+
+        /**
+         * \brief Get a segment in the message chain
+         */
+        const auto& operator[](const size_t index) const { return chain_[index]; }
+
+        /**
          * \brief Append a message chain to this message
          * \param chain The message chain to append
          * \return Reference to this message
@@ -231,6 +269,15 @@ namespace mirai
         Message& operator+=(std::string_view plain_text);
 
         /**
+         * \brief Append a string of plain text to this message
+         * \param plain_text The plain text to append
+         * \return Reference to this message
+         * \remarks This overload exists for preventing overload ambiguity
+         */
+        template <typename T, std::enable_if_t<detail::is_sv_like_v<T>>* = nullptr>
+        Message& operator+=(const T& plain_text) { return operator+=(std::string_view(plain_text)); }
+
+        /**
          * \brief Check if two messages are the same
          * \param lhs The first message
          * \param rhs The second message
@@ -246,6 +293,16 @@ namespace mirai
          * \return The result
          */
         friend bool operator==(const Message& lhs, std::string_view rhs);
+
+        /**
+         * \brief Check whether a message and a plain text string are the same
+         * \param lhs The message
+         * \param rhs The plain text string
+         * \return The result
+         * \remarks This overload exists for preventing overload ambiguity
+         */
+        template <typename T, std::enable_if_t<detail::is_sv_like_v<T>>* = nullptr>
+        friend bool operator==(const Message& lhs, const T& rhs) { return lhs == std::string_view(rhs); }
 
         /**
          * \brief Get the concatenation of all plain text segments 
@@ -307,6 +364,12 @@ namespace mirai
          * \return The result
          */
         bool contains(const Segment& segment) const;
+
+        /**
+         * \brief Check whether the message consists of only plain text
+         * \return The result
+         */
+        bool is_text_only() const;
 
         /**
          * \brief Match the types to the message chain, and get a tuple if matches

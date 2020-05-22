@@ -44,6 +44,9 @@ namespace mirai
 
     namespace detail
     {
+        template <typename T> constexpr bool is_segment_type_or_segment =
+            msg::is_segment_type<T> || std::is_same_v<T, Segment>;
+
         template <SegmentType T>
         using segment_type = std::tuple_element_t<static_cast<size_t>(T), msg::detail::MsgTuple>;
 
