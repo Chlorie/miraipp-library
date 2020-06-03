@@ -112,6 +112,16 @@ namespace mirai
          * \return Reference to this object
          */
         Message& operator=(std::string_view plain_text);
+        
+        /**
+         * \brief Assign a plain text string to this object
+         * \tparam T Type of the string_view like object
+         * \param plain_text The plain text string
+         * \remarks This overload exists for enabling implicit converting from const char*
+         * or const char(&)[N] to Message
+         */
+        template <typename T, std::enable_if_t<detail::is_sv_like_v<T>>* = nullptr>
+        Message& operator=(const T& plain_text) { return *this = std::string_view(plain_text); }
 
         /**
          * \brief Get the underlying message chain

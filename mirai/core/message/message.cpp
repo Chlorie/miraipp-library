@@ -12,7 +12,7 @@ namespace mirai
     }
 
     Message::Message(const std::string_view plain_text):
-        chain_({ msg::Plain{ std::string(plain_text) } }) {}
+        chain_{ Segment{ msg::Plain{ std::string(plain_text) } } } {}
 
     Message& Message::operator=(MessageChain chain)
     {
@@ -87,7 +87,7 @@ namespace mirai
     bool operator==(const Message& lhs, const std::string_view rhs)
     {
         if (lhs.chain_.size() != 1 || !is_plain(lhs.chain_.front())) return false;
-        return get_plain(lhs.chain_.front()) == rhs;
+        return std::string_view(get_plain(lhs.chain_.front())) == rhs;
     }
 
     std::string Message::extract_text() const
