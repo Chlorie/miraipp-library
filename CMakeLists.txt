@@ -53,8 +53,9 @@ find_package(unofficial-iconv CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${LIB_NAME} PRIVATE
     cpr
+    unofficial::iconv::libiconv unofficial::iconv::libcharset)
+target_link_libraries(${LIB_NAME} PUBLIC
     websocketpp::websocketpp
     OpenSSL::SSL OpenSSL::Crypto
     asio asio::asio
-    unofficial::iconv::libiconv unofficial::iconv::libcharset
     nlohmann_json nlohmann_json::nlohmann_json)
