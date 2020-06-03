@@ -130,7 +130,7 @@ namespace mirai
             json.at("display").get_to(value.display);
         }
 
-        void to_json(utils::json& json, const AtAll& value)
+        void to_json(utils::json& json, const AtAll&)
         {
             json = {
                 { "type", "AtAll" }

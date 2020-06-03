@@ -105,7 +105,7 @@ namespace mirai
         { TargetType::friend_, "friend" },
         { TargetType::group, "group" },
         { TargetType::temp, "temp" }
-        });
+        })
 
     /**
      * \brief Permission of a group member
@@ -116,7 +116,7 @@ namespace mirai
         { Permission::member, "MEMBER" },
         { Permission::administrator, "ADMINISTRATOR" },
         { Permission::owner, "OWNER" },
-        });
+        })
 
     /**
      * \brief Information about a group

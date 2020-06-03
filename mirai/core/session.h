@@ -113,7 +113,7 @@ namespace mirai
          * \brief Get an "At" message segment with the target being the bot
          * \return The message segment
          */
-        msg::At at_self() const { return { qq_ }; }
+        msg::At at_self() const { return msg::At(qq_); }
 
         /**
          * \brief Query whether the thread pool is started

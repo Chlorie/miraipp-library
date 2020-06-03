@@ -156,7 +156,7 @@ namespace mirai::utils
             const char* begin = sv.data();
             const char* end = begin + sv.size();
             const auto [ptr, ec] = std::from_chars(begin, end, result);
-            if (ec != std::errc{} || ptr != end) return {};
+            if (ec != std::errc{} || ptr != end) return std::nullopt;
             return result;
         }
     };

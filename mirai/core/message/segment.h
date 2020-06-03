@@ -49,11 +49,24 @@ namespace mirai
         {
             uid_t target; ///< Mentioned group member ID
             std::string display; ///< The string for display the @ message
+
+            /**
+             * \brief Construct a default At segment
+             */
+            At() = default;
+
+            /**
+             * \brief Construct an At segment with a target
+             * \param target The target of the at mention
+             */
+            explicit At(const uid_t target): target(target) {}
+
             /**
              * \brief Get a string representation of this object
              * \return The string
              */
             std::string stringify() const;
+
             friend bool operator==(const At& lhs, const At& rhs) { return lhs.target == rhs.target; }
             friend bool operator!=(const At& lhs, const At& rhs) { return !(lhs == rhs); }
         };
