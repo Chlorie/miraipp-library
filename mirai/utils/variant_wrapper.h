@@ -40,7 +40,7 @@ namespace mirai::utils
                 }
                 else // Use the given T
                 {
-                    if constexpr (std::is_same_v<decltype(data), T>)
+                    if constexpr (std::is_same_v<std::decay_t<decltype(data)>, T>)
                         std::forward<F>(func)(data);
                 }
             });
