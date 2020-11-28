@@ -49,11 +49,11 @@ find_package(cpr CONFIG REQUIRED)
 find_package(websocketpp CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(asio CONFIG REQUIRED)
-find_package(unofficial-iconv CONFIG REQUIRED)
+find_package(Iconv REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${LIB_NAME} PRIVATE
     cpr
-    unofficial::iconv::libiconv unofficial::iconv::libcharset)
+    Iconv::Iconv)
 target_link_libraries(${LIB_NAME} PUBLIC
     websocketpp::websocketpp
     OpenSSL::SSL OpenSSL::Crypto
